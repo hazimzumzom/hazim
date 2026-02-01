@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Italianno&display=swap" rel="stylesheet">
+
+  <style>
+    .clickable {
+      width: 150px;
+      cursor: pointer;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .fade-out {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+
+    /* Intro overlay styles */
+    #introOverlay {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      z-index: 50;
+      transition: opacity 0.7s ease;
+      opacity: 1;
+    }
+
+    #introOverlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #introPopup {
+      max-width: 720px;
+      width: calc(100% - 48px);
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(6px);
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+      text-align: center;
+      transform-origin: center;
+      transition: transform 0.6s ease, opacity 0.6s ease;
+    }
+
+    #introPopup.scale-out {
+      transform: scale(0.96);
+      opacity: 0;
+    }
+
+    #introHeading {
+      font-size: 2.25rem; /* ~text-4xl */
+      font-weight: 700;
+      color: #1f2937; /* gray-800 */
+      margin: 0;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+
+    #introHeading.visible {
+      opacity: 1;
+    }
+
+    .italianno-regular {
+      font-family: "Italianno", cursive;
+      font-weight: 400;
+      font-style: normal;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Intro popup overlay -->
+  <div id="introOverlay" class="hidden">
+    <div id="introPopup">
+      <h1 id="introHeading" class="italianno-regular">Welcome</h1>
+    </div>
+  </div>
+
+  <!-- Background -->
+  <div class="relative h-screen bg-blue-100">
+
+    <!-- Center Container -->
+    <div class="flex h-full flex-col items-center justify-center px-4">
+      <div class="max-w-3xl w-full text-center">
+
+        <!-- SCREEN 1 -->
+        <div id="screen1">
+          <img src="start.png" id="startImg" class="clickable mx-auto" />
+        </div>
+
+        <!-- SCREEN 2 -->
+        <div id="screen2" class="hidden">
+            
+        </div>
+
+          
+
+          
+          
+  </div>
+
+  <!-- Script -->
+  <script>
+    // Navigation elements
+    const img = document.getElementById("startImg");
+    const screen1 = document.getElementById("screen1");
+    const screen2 = document.getElementById("screen2");
+
+    // Intro overlay elements
+    const introOverlay = document.getElementById('introOverlay');
+    const introPopup = document.getElementById('introPopup');
+    const introHeading = document.getElementById('introHeading');
+
+    // Four headings to show in sequence
+    const headings = [
+      'Nur Farhanah & Afif Adwa',
+      'Walimatul Urus',
+      '31 December 2027',
+      'Please be our guest..'
+    ];
+
+    // Timing (ms)
+    const visibleTime = 2200; // how long a heading remains visible
+    const transitionGap = 400; // gap between fade out and next fade in
+
+    function showSequence() {
+      return new Promise((resolve) => {
+        let i = 0;
+
+        // Ensure popup is reset and visible
+        introPopup.classList.remove('scale-out');
+        introOverlay.classList.remove('hidden');
+
+        function showNext() {
+          introHeading.textContent = headings[i];
+          // fade in
+          requestAnimationFrame(() => introHeading.classList.add('visible'));
+
+          setTimeout(() => {
+            // fade out
+            introHeading.classList.remove('visible');
+            i++;
+
+            if (i < headings.length) {
+              setTimeout(showNext, transitionGap);
+            } else {
+              // After the last heading, fade out the popup and remove overlay
+              setTimeout(() => {
+                introPopup.classList.add('scale-out');
+                introOverlay.classList.add('hidden');
+
+                // Remove overlay from DOM after its fade completes and resolve
+                setTimeout(() => {
+                  if (introOverlay && introOverlay.parentNode) introOverlay.parentNode.removeChild(introOverlay);
+                  resolve();
+                }, 800);
+              }, transitionGap);
+            }
+          }, visibleTime);
+        }
+
+        showNext();
+      });
+    }
+
+    // Prevent double-trigger
+    let introPlaying = false;
+
+    img.addEventListener("click", () => {
+      if (introPlaying) return;
+      introPlaying = true;
+
+      // Optional image animation while intro plays
+      img.classList.add("fade-out");
+
+      // Show intro sequence, then switch to screen 2
+      showSequence().then(() => {
+        screen1.style.display = "none";
+        screen2.style.display = "block";
+      });
+    });
+  </script>
+</body>
+</html>
